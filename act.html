@@ -85,7 +85,7 @@
         window.onload = () => {
             const userData = localStorage.getItem('mledger_user');
             if (!userData) {
-                window.location.href = 'login.html'; // Redirect to your login file
+                window.location.href = 'index.html'; // Redirect to your login file
                 return;
             }
             currentUser = JSON.parse(userData);
