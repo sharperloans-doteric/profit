@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ProfitDash | M-Ledger Earnings</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root { --primary: #4CAF50; --dark: #0f0f0f; --card: #1a1a1a; }
+        body { background-color: var(--dark); color: white; font-family: system-ui, sans-serif; }
+        .glass { background: var(--card); border: 1px solid #333; border-radius: 20px; }
+        .btn-primary { background: var(--primary); color: white; transition: 0.3s; }
+        .btn-primary:active { transform: scale(0.95); }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+
+    <div class="max-w-md mx-auto">
+        <header class="flex justify-between items-center mb-6">
+            <div>
+                <h1 class="text-xl font-bold text-[#4CAF50]">Profit<span class="text-white">Dash</span></h1>
+                <p id="userName" class="text-xs text-gray-400">Loading profile...</p>
+            </div>
+            <div onclick="logout()" class="w-10 h-10 glass flex items-center justify-center cursor-pointer border-[#4CAF50]/30">
+                <i class="fas fa-sign-out-alt text-[#4CAF50]"></i>
+            </div>
+        </header>
+
+        <div class="glass p-6 mb-6 bg-gradient-to-br from-[#1a1a1a] to-[#000] border-[#4CAF50]/20">
+            <div class="flex justify-between items-start mb-4">
+                <div>
+                    <p class="text-gray-400 text-xs font-bold uppercase tracking-widest">Available Balance</p>
+                    <h2 id="balanceDisplay" class="text-4xl font-mono font-bold mt-1">0.00</h2>
+                </div>
+                <span class="bg-[#4CAF50]/20 text-[#4CAF50] text-[10px] px-2 py-1 rounded-full font-bold">LIVE</span>
+            </div>
+            <div class="grid grid-cols-2 gap-4 pt-4 border-t border-white/5">
+                <div>
+                    <p class="text-[10px] text-gray-500 uppercase">Daily Profit</p>
+                    <p class="text-green-400 font-bold">+100.00</p>
+                </div>
+                <div>
+                    <p class="text-[10px] text-gray-500 uppercase">Referral Gift</p>
+                    <p class="text-blue-400 font-bold">+200.00</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4 mb-6">
+            <button onclick="initiateDeposit()" class="btn-primary p-4 rounded-2xl font-bold flex flex-col items-center gap-2">
+                <i class="fas fa-plus-circle text-xl"></i>
+                <span class="text-sm">Deposit 1000</span>
+            </button>
+            <button onclick="initiateWithdraw()" class="glass border-white/10 p-4 rounded-2xl font-bold flex flex-col items-center gap-2">
+                <i class="fas fa-arrow-alt-circle-down text-xl text-[#4CAF50]"></i>
+                <span class="text-sm">Withdraw 100</span>
+            </button>
+        </div>
+
+        <div class="glass p-5 mb-6">
+            <h3 class="text-xs font-bold text-gray-400 uppercase mb-3">Your Referral Link</h3>
+            <div class="flex gap-2">
+                <input id="refLink" type="text" readonly 
+                    class="bg-black border border-white/10 rounded-lg px-3 py-2 text-xs flex-grow text-gray-400 outline-none">
+                <button onclick="copyRef()" class="bg-[#4CAF50] text-white px-4 rounded-lg text-xs font-bold">COPY</button>
+            </div>
+            <p class="text-[10px] text-gray-500 mt-3 text-center">Earn 200 instantly when a friend deposits.</p>
+        </div>
+
+        <div class="glass overflow-hidden">
+            <div class="p-4 border-b border-white/5 bg-white/5">
+                <h3 class="text-xs font-bold uppercase tracking-wider">Transaction History</h3>
+            </div>
+            <div id="txHistory" class="text-sm">
+                <div class="p-6 text-center text-gray-600 italic">No transactions found.</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API = "https://funds-mauve.vercel.app/api";
+        let currentUser = null;
+
+        window.onload = () => {
+            const userData = localStorage.getItem('mledger_user');
+            if (!userData) {
+                window.location.href = 'login.html'; // Redirect to your login file
+                return;
+            }
+            currentUser = JSON.parse(userData);
+            setupUI();
+        };
+
+        function setupUI() {
+            document.getElementById('userName').innerText = `${currentUser.name} (${currentUser.phone})`;
+            document.getElementById('refLink').value = `https://profitdash.netlify.app/reg?ref=${currentUser.phone}`;
+            
+            // You would normally fetch the balance from your /api/user endpoint
+            // For now, it shows the current user data
+            document.getElementById('balanceDisplay').innerText = currentUser.balance || "0.00";
+        }
+
+        async function initiateDeposit() {
+            if(!confirm("Deposit Ksh 1,000 to start earning daily profit?")) return;
+            
+            // Reusing your STK Push logic
+            alert("Sending M-Pesa STK Push to " + currentUser.phone);
+            // Replace with your existing backend-payment fetch call
+        }
+
+        async function initiateWithdraw() {
+            alert("Withdrawal request for 100.00 received. Processing...");
+            // Hit your /withdraw endpoint here
+        }
+
+        function copyRef() {
+            const link = document.getElementById('refLink');
+            link.select();
+            document.execCommand('copy');
+            alert("Link copied! Share to earn 200.");
+        }
+
+        function logout() {
+            localStorage.removeItem('mledger_user');
+            window.location.href = 'login.html';
+        }
+    </script>
+</body>
+</html>
