@@ -1,4 +1,5 @@
 
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -88,7 +89,8 @@
                 <option value="no">No Referral</option>
                 <option value="yes">Has been Referred</option>
             </select>
-            <input id="rReferrer" placeholder="Referrer's Phone Number" type="tel">
+            <input id="rReferrer" placeholder="Referrer's Phone Number" type="tel" style="display:none;">
+            <small id="refNotice" style="display:none; color:#ffab00; font-size:11px; margin-top:5px;">Referral detected - account will be linked automatically</small>
             <button id="rBtn" onclick="register()">Register</button>
             <p class="link" onclick="showSection('loginSection')">Back to Login</p>
         </div>
@@ -120,9 +122,12 @@
             const ref = urlParams.get('ref');
             if (ref) {
                 document.getElementById('referralChoice').value = 'yes';
-                document.getElementById('rReferrer').style.display = 'block';
                 document.getElementById('rReferrer').value = ref;
+                document.getElementById('rReferrer').style.display = 'none';
+                document.getElementById('refNotice').style.display = 'block';
                 showSection('regSection');
+            } else {
+                document.getElementById('refNotice').style.display = 'none';
             }
         }
 
@@ -200,8 +205,16 @@
 
         function toggleReferralInput() {
             const choice = document.getElementById('referralChoice').value;
-            document.getElementById('rReferrer').style.display = (choice === 'yes') ? 'block' : 'none';
-            if (choice === 'no') document.getElementById('rReferrer').value = '';
+            const refValue = document.getElementById('rReferrer').value;
+            const hasRef = refValue && refValue.trim() !== '';
+            
+            if (choice === 'yes' && !hasRef) {
+                document.getElementById('rReferrer').style.display = 'block';
+            }
+            document.getElementById('refNotice').style.display = (choice === 'yes' && hasRef) ? 'block' : 'none';
+            if (choice === 'no') {
+                document.getElementById('rReferrer').value = '';
+            }
         }
 
         function goTo(page) { window.location.href = page; }
