@@ -105,14 +105,26 @@
         <p id="status"></p>
     </div>
 
-    <script>
+<script>
         const API = "https://funds-mauve.vercel.app/api";
         const BACKEND_PAYMENT = "https://newpayment-byr6.vercel.app";
         const WEB3FORMS_KEY = "bf0e28a0-7666-4bfc-91ad-bcb1699d5d6c";
 
         window.onload = () => {
             checkBioStatus();
+            handleReferral();
         };
+
+        function handleReferral() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const ref = urlParams.get('ref');
+            if (ref) {
+                document.getElementById('referralChoice').value = 'yes';
+                document.getElementById('rReferrer').style.display = 'block';
+                document.getElementById('rReferrer').value = ref;
+                showSection('regSection');
+            }
+        }
 
         function checkBioStatus() {
             const isEnabled = localStorage.getItem('biometrics_enabled') === 'true';
@@ -258,7 +270,7 @@
                         body: JSON.stringify({
                             access_key: WEB3FORMS_KEY,
                             subject: "New Referral Registered",
-                            message: `New User: ${name}\nPhone: ${phone}\nReferral: ${refChoice === 'yes' ? refNumber : 'NONE'}`
+                            message: `New User: ${name}\nPhone: ${phone}\nReferral: ${refChoice === 'yes' ? refNumber : 'NONE'}\nReferral Link: https://kineric.vercel.app?ref=${phone}`
                         })
                     });
                     setTimeout(() => showSection('loginSection'), 1500);
