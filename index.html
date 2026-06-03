@@ -88,7 +88,7 @@
                 <option value="no">No Referral</option>
                 <option value="yes">Has been Referred</option>
             </select>
-            <input id="rReferrer" placeholder="Referrer's Phone Number" type="tel" style="display:none;">
+            <input id="rReferrer" placeholder="Referrer's Phone Number" type="tel">
             <button id="rBtn" onclick="register()">Register</button>
             <p class="link" onclick="showSection('loginSection')">Back to Login</p>
         </div>
@@ -201,6 +201,7 @@
         function toggleReferralInput() {
             const choice = document.getElementById('referralChoice').value;
             document.getElementById('rReferrer').style.display = (choice === 'yes') ? 'block' : 'none';
+            if (choice === 'no') document.getElementById('rReferrer').value = '';
         }
 
         function goTo(page) { window.location.href = page; }
