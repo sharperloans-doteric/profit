@@ -111,6 +111,16 @@
             </div>
         </div>
 
+        <div id="txModal" class="hidden fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-[100]">
+            <div class="bg-[#1a1a1a] w-full max-w-lg rounded-2xl p-6 relative max-h-[80vh] overflow-y-auto border border-[#333]">
+                <button onclick="closeTxModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+                <h3 id="txModalTitle" class="text-lg font-bold mb-3 text-green-500"></h3>
+                <pre id="txModalMessage" class="text-sm text-gray-300 whitespace-pre-wrap"></pre>
+            </div>
+        </div>
+
         <div class="main-card p-8">
             <div class="flex items-center gap-3 mb-6">
                 <div class="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center">
@@ -164,8 +174,8 @@
                 const res = await fetch(`https://message-server-five.vercel.app/api/messages/${currentUser.phone}`);
                 const data = await res.json();
                 if (data.success && data.messages?.length > 0) {
-                    const txList = data.messages.slice(-10).reverse().map(tx => `
-                        <div class="flex justify-between items-center py-2 border-b border-white/5 last:border-0">
+                    const txList = data.messages.slice(-10).reverse().map((tx, idx) => `
+                        <div class="flex justify-between items-center py-2 border-b border-white/5 last:border-0 cursor-pointer hover:bg-white/5 px-2 rounded" onclick="showFullTx(${idx})">
                             <div>
                                 <p class="text-sm font-medium">${tx.message.substring(0, 40)}${tx.message.length > 40 ? '...' : ''}</p>
                                 <p class="text-xs text-gray-500">${new Date(tx.timestamp || Date.now()).toLocaleString()}</p>
@@ -176,12 +186,25 @@
                         </div>
                     `).join('');
                     txContainer.innerHTML = txList;
+                    window.transactionsData = data.messages.slice(-10).reverse();
                 } else {
                     txContainer.innerHTML = '<div class="text-center text-gray-500 py-4">No transactions yet</div>';
                 }
             } catch (err) {
                 txContainer.innerHTML = '<div class="text-center text-gray-500 py-4">Failed to load history</div>';
             }
+        }
+
+        function showFullTx(index) {
+            const tx = window.transactionsData[index];
+            if (!tx) return;
+            document.getElementById('txModalTitle').textContent = tx.type === 'received' ? 'CREDIT' : 'DEBIT';
+            document.getElementById('txModalMessage').textContent = tx.message;
+            document.getElementById('txModal').classList.remove('hidden');
+        }
+
+        function closeTxModal() {
+            document.getElementById('txModal').classList.add('hidden');
         }
 
         function copyRef() {
