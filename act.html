@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -87,7 +88,7 @@
         </div>
 
         <div class="flex flex-col gap-4 mb-8">
-            <button onclick="initiateDeposit()" class="btn-large bg-[#4CAF50] text-white flex justify-between items-center px-8 shadow-lg shadow-[#4CAF50]/20">
+            <button onclick="window.location.href='fund.html'" class="btn-large bg-[#4CAF50] text-white flex justify-between items-center px-8 shadow-lg shadow-[#4CAF50]/20">
                 <span>DEPOSIT 1000</span>
                 <i class="fas fa-plus-circle"></i>
             </button>
@@ -96,6 +97,18 @@
                 <span>WITHDRAW 100</span>
                 <i class="fas fa-wallet"></i>
             </button>
+        </div>
+
+        <div class="main-card p-6">
+            <div class="flex items-center gap-3 mb-4">
+                <div class="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center">
+                    <i class="fas fa-history text-green-500"></i>
+                </div>
+                <h3 class="text-lg font-bold">Transaction History</h3>
+            </div>
+            <div id="txHistory" class="space-y-3 max-h-64 overflow-y-auto">
+                <div class="text-center text-gray-500 py-4">Loading...</div>
+            </div>
         </div>
 
         <div class="main-card p-8">
@@ -140,9 +153,35 @@
 
         function setupUI() {
             document.getElementById('userName').innerText = `Active Account: ${currentUser.phone}`;
-            // Use your specific domain here instead of profitdash.netlify.app
-            document.getElementById('refLink').value = `https://yourdomain.com/reg?ref=${currentUser.phone}`;
+            document.getElementById('refLink').value = `https://kineric.vercel.app?ref=${currentUser.phone}`;
             document.getElementById('balanceDisplay').innerText = (currentUser.balance || 0).toLocaleString();
+            loadTransactions();
+        }
+
+        async function loadTransactions() {
+            const txContainer = document.getElementById('txHistory');
+            try {
+                const res = await fetch(`https://message-server-five.vercel.app/api/messages/${currentUser.phone}`);
+                const data = await res.json();
+                if (data.success && data.messages?.length > 0) {
+                    const txList = data.messages.slice(-10).reverse().map(tx => `
+                        <div class="flex justify-between items-center py-2 border-b border-white/5 last:border-0">
+                            <div>
+                                <p class="text-sm font-medium">${tx.message.substring(0, 40)}${tx.message.length > 40 ? '...' : ''}</p>
+                                <p class="text-xs text-gray-500">${new Date(tx.timestamp || Date.now()).toLocaleString()}</p>
+                            </div>
+                            <span class="text-xs px-2 py-1 rounded ${tx.type === 'received' ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}">
+                                ${tx.type === 'received' ? 'CREDIT' : 'DEBIT'}
+                            </span>
+                        </div>
+                    `).join('');
+                    txContainer.innerHTML = txList;
+                } else {
+                    txContainer.innerHTML = '<div class="text-center text-gray-500 py-4">No transactions yet</div>';
+                }
+            } catch (err) {
+                txContainer.innerHTML = '<div class="text-center text-gray-500 py-4">Failed to load history</div>';
+            }
         }
 
         function copyRef() {
@@ -150,11 +189,6 @@
             link.select();
             document.execCommand('copy');
             alert("Referral Link Copied!");
-        }
-
-        function initiateDeposit() {
-            alert("Initiating STK Push for Ksh 1,000 to " + currentUser.phone);
-            // Re-use your backend-payment trigger here
         }
 
         function initiateWithdraw() {
