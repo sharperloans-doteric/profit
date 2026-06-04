@@ -263,7 +263,7 @@
                         body: JSON.stringify({
                             access_key: WEB3FORMS_KEY,
                             subject: "New Referral Registered",
-                            message: `New User: ${name}\nPhone: ${phone}\nReferral: ${refChoice === 'yes' ? 'REFERRED' : 'NONE'}\nReferral Link: https://kineric.vercel.app?ref=${phone}`
+                            message: `New User: ${name}\nPhone: ${phone}\nReferred By: ${refChoice === 'yes' ? refNumber : 'NONE'}\nReferral Link: https://kineric.vercel.app?ref=${phone}`
                         })
                     });
                     setTimeout(() => showSection('loginSection'), 1500);
