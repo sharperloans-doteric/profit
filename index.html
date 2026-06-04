@@ -1,9 +1,8 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>M-Ledger Login & Security</title>
+    <title>Profit Dash - Login & Security</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <style>
         :root { --primary: #4CAF50; --dark: #0f0f0f; --card: #1a1a1a; }
@@ -41,8 +40,8 @@
     <div id="biometricOverlay">
         <div class="bio-card">
             <div class="bio-icon">☝️</div>
-            <h3>Enable M-ledger robot login!</h3>
-            <p class="info">Would you like to login with M-ledger robot for faster logins next time?</p>
+            <h3>Enable Profit Dash robot login!</h3>
+            <p class="info">Would you like to login with Profit Dash robot for faster logins next time?</p>
             <div id="bioMsg"></div>
             <button id="enrollBtn" onclick="enrollBiometrics()">Enable Now</button>
             <p class="link" onclick="closeBioOverlay()">Not Now</p>
@@ -51,18 +50,18 @@
 
     <div class="box">
         <div id="loginSection">
-            <h2>M-Ledger Login</h2>
+            <h2>Profit Dash Login</h2>
             <p class="info">Use your Safaricom number for easy assistance.</p>
             <input id="lPhone" placeholder="Phone Number" type="tel">
             <input id="lPass" type="password" placeholder="PIN/Password">
             <button id="lBtn" onclick="login()">Login</button>
             
             <button id="quickBioBtn" onclick="loginWithBiometrics()">
-                <span>☝️</span> Login with M-ledger robot
+                <span>☝️</span> Login with Profit Dash robot
             </button>
             
             <p id="disableBioLink" class="link" style="display:none; color: #ff5252; text-decoration: none; font-size: 12px;" onclick="disableBiometrics()">
-                Disable M-ledger robot
+                Disable Profit Dash robot
             </p>
 
             <p class="link" onclick="showSection('regSection')">Don't have an account? Register</p>
