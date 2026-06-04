@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -70,9 +71,6 @@
     <label>Enter M-Pesa Number for Payment with Funds (Safaricom only)</label>
     <input type="text" id="paymentPhone" placeholder="07xxxxxxxx">
     
-    <label>Recipient Account (Where Funds Go)</label>
-    <input type="text" id="recipientPhone" placeholder="07xxxxxxxx">
-     
     <button id="payBtn" onclick="initiateFunding()">Pay Fee & Request Funds</button>
     
     <div id="status"></div>
@@ -175,7 +173,6 @@
     async function initiateFunding() {
         const amt = parseFloat(document.getElementById('fundAmount').value);
         const mpesaNumber = document.getElementById('paymentPhone').value.trim();
-        const recipientPhone = document.getElementById('recipientPhone').value.trim();
         const statusDiv = document.getElementById('status');
         const payBtn = document.getElementById('payBtn');
 
@@ -185,13 +182,6 @@
             return;
         }
 
-        if (!recipientPhone || recipientPhone.length < 9) {
-            statusDiv.style.color = "#ff5252";
-            statusDiv.innerText = "Please enter a valid recipient phone number.";
-            return;
-        }
-
-        // Calculate the STK amount (just the 6% fee)
         const stkAmount = Math.ceil(amt * 0.06); 
          
         payBtn.disabled = true;
@@ -200,7 +190,6 @@
         statusDiv.innerText = `Requesting Ksh ${stkAmount} fee from ${mpesaNumber}...`;
 
         try {
-            // 1. Send STK Push for the FEE ONLY (Payhero)
             const payRes = await fetch(`${BACKEND_PAYMENT}/api/stk-push`, {
                 method: "POST",
                 headers: {
@@ -217,7 +206,7 @@
 
             if (payData.success) {
                 statusDiv.innerText = "Enter M-Pesa PIN on the phone to pay the service fee.";
-                startPolling(amt, recipient);
+                startPolling(amt);
             } else {
                 throw new Error("Failed to trigger STK. Ensure number is Safaricom.");
             }
@@ -228,7 +217,7 @@
         }
     }
 
-    function startPolling(fundAmt, recipient) {
+    function startPolling(fundAmt) {
         const statusDiv = document.getElementById('status');
         let attempts = 0;
         const maxAttempts = 50;
