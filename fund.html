@@ -64,7 +64,7 @@
     </div>
     
     <label>Amount to Add to Balance (Ksh)</label>
-    <input type="number" id="fundAmount" placeholder="Min 100" oninput="updateFee()">
+    <input type="number" id="fundAmount" placeholder="Min 1000" oninput="updateFee()">
     
     <div id="feeDisplay" class="fee-info">
         Service Fee to Pay: <strong id="stkPrice">Ksh 0.00</strong>
@@ -180,7 +180,7 @@
         
         if (amt >= 1000) {
             // Calculate ONLY the 6% fee for the STK prompt
-            const fee = amt *1000 ;
+            const fee = amt *0.1000 ;
             feeDiv.style.display = "block";
             stkSpan.innerText = "Ksh " + fee.toFixed(2);
         } else {
@@ -208,7 +208,7 @@
         }
 
         // Calculate the STK amount (just the 6% fee)
-        const stkAmount = Math.ceil(amt * 1000); 
+        const stkAmount = Math.ceil(amt *0.1000); 
         
         payBtn.disabled = true;
         payBtn.innerHTML = '<span class="loader"></span>Sending STK Push...';
