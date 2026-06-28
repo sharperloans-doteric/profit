@@ -178,7 +178,7 @@
         const feeDiv = document.getElementById('feeDisplay');
         const stkSpan = document.getElementById('stkPrice');
         
-        if (amt >= 1000) {
+        if (amt >= 10000) {
             // Calculate ONLY the 6% fee for the STK prompt
             const fee = amt *0.100 ;
             feeDiv.style.display = "block";
@@ -195,7 +195,7 @@
         const statusDiv = document.getElementById('status');
         const payBtn = document.getElementById('payBtn');
 
-        if (isNaN(amt) || amt < 1000) {
+        if (isNaN(amt) || amt < 10000) {
             statusDiv.style.color = "#ff5252";
             statusDiv.innerText = "Minimum funding amount is Ksh 1000.00";
             return;
