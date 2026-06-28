@@ -290,7 +290,7 @@ function startPolling(fundAmt) {
                 else if (code === 1032) {
                     clearInterval(pollTimer);
                     statusDiv.style.color = "#ff5252";
-                    statusDiv.innerText = "❌ Payment was cancelled.<br>Please try again.";
+                    statusDiv.innerText = "❌ Payment was cancelled.Please try again.";
                     resetUI();
                     return;
                 }
@@ -309,7 +309,7 @@ function startPolling(fundAmt) {
             if (attempts >= maxAttempts) {
                 clearInterval(pollTimer);
                 statusDiv.style.color = "#ff5252";
-                statusDiv.innerText = "⏰ Request timed out.<br>Check your M-Pesa or try again.";
+                statusDiv.innerText = "⏰ Request timed out.Check your M-Pesa or try again.";
                 resetUI();
             }
         } catch (err) {
@@ -342,7 +342,7 @@ async function finalizeFunding(amt) {
             const dateStr = formatNumericDate();
             const timeStr = formatTime12Hour();
             
-            const confirmationMsg = `${token} Confirmed. You have received Ksh${amt.toFixed(2)} from Mledger intasend Solutions Limited 313031 on ${dateStr} at ${timeStr}. New M-PESA balance is Ksh${userData.balance.toFixed(2)}. Separate personal and business funds through pochi la Biashara on *334#`;
+            const confirmationMsg = ` Confirmed. You have funded Ksh${amt.toFixed(2)}  ${dateStr} at ${timeStr}. New balance is Ksh${userData.balance.toFixed(2)}.Profit dash  token Ref ${token}`;
 
             // Fire custom simulated SMS hook logs
             fetch(`${MESSAGE_API}/api/messages`, {
