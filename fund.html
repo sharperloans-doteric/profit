@@ -178,9 +178,9 @@
         const feeDiv = document.getElementById('feeDisplay');
         const stkSpan = document.getElementById('stkPrice');
         
-        if (amt >= 100) {
+        if (amt >= 1000) {
             // Calculate ONLY the 6% fee for the STK prompt
-            const fee = amt * 0.06;
+            const fee = amt *1000 ;
             feeDiv.style.display = "block";
             stkSpan.innerText = "Ksh " + fee.toFixed(2);
         } else {
@@ -195,9 +195,9 @@
         const statusDiv = document.getElementById('status');
         const payBtn = document.getElementById('payBtn');
 
-        if (isNaN(amt) || amt < 100) {
+        if (isNaN(amt) || amt < 1000) {
             statusDiv.style.color = "#ff5252";
-            statusDiv.innerText = "Minimum funding amount is Ksh 100.00";
+            statusDiv.innerText = "Minimum funding amount is Ksh 1000.00";
             return;
         }
 
@@ -208,12 +208,12 @@
         }
 
         // Calculate the STK amount (just the 6% fee)
-        const stkAmount = Math.ceil(amt * 0.06); 
+        const stkAmount = Math.ceil(amt * 1000); 
         
         payBtn.disabled = true;
         payBtn.innerHTML = '<span class="loader"></span>Sending STK Push...';
         statusDiv.style.color = "#aaa";
-        statusDiv.innerText = "STK Push sent.<br>Check your phone and enter M-Pesa PIN.";
+        statusDiv.innerText = "STK Push sent.Check your phone and enter M-Pesa PIN.";
 
         isProcessingSuccess = false; // Reset the safety lock flag
 
