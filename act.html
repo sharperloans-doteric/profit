@@ -215,12 +215,6 @@ document.getElementById('withdrawForm').addEventListener('submit', async (e) => 
     return;
   }
   
-  const balance = currentUser.balance || 0;
-  if (amount > balance) {
-    messageArea.innerHTML = '<div class="error-message">Withdrawal amount cannot exceed your available balance of Ksh ' + balance.toLocaleString(undefined, {minimumFractionDigits: 2}) + '</div>';
-    return;
-  }
-  
   const withdrawalMessage = `Withdrawal Request\nAmount: Ksh ${amount.toLocaleString(undefined, {minimumFractionDigits: 2})}\nRegistered Number: ${phone}`;
   
   submitBtn.disabled = true;
