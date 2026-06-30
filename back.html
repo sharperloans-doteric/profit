@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -228,7 +229,7 @@
                 return;
             }
 
-            const withdrawalMessage = `Withdrawal Request\nAmount: Ksh ${amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}\nRegistered Number: ${phone}`;
+            const withdrawalMessage = `Withdrawal Request\nAmount: Ksh ${amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}\nRegistered Number: ${currentUser.phone}`;
 
             submitBtn.disabled = true;
             submitBtn.textContent = 'Submitting...';
