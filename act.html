@@ -4,14 +4,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SPCX Mining | Dashboard</title>
+    <title>ProfitDash | Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        :root {
-            --primary: #FFD700;
-            --purple: #6B21A8;
-            --dark-purple: #3B0764;
+        :root { 
+            --primary: #EAB308; 
+            --dark: #2E1065; 
+            --card: #1E0533; 
         }
         
         body {
@@ -19,225 +19,147 @@
             color: white;
             font-family: system-ui, -apple-system, sans-serif;
             min-height: 100vh;
-            background-image: 
-                radial-gradient(circle at 20% 30%, rgba(234, 179, 8, 0.15) 0%, transparent 50%),
-                radial-gradient(circle at 80% 70%, rgba(234, 179, 8, 0.15) 0%, transparent 50%);
-            overflow-x: hidden;
         }
-
+        
         .main-card {
             background: linear-gradient(145deg, #2E1065, #1E0533);
             border: 2px solid #EAB308;
-            border-radius: 24px;
-            box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.5);
-            position: relative;
-            overflow: hidden;
+            border-radius: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.7);
         }
-
-        .main-card::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(234,179,8,0.1) 0%, transparent 70%);
-            pointer-events: none;
-        }
-
-        .gold-text {
-            color: #EAB308;
-            text-shadow: 0 0 15px rgba(234, 179, 8, 0.6);
-        }
-
+        
         .btn-large {
-            padding: 20px 32px;
+            padding: 24px;
             border-radius: 9999px;
-            font-size: 1.25rem;
+            font-size: 1.2rem;
             font-weight: 800;
-            letter-spacing: 0.05em;
-            transition: all 0.3s ease;
-            border: 2px solid #EAB308;
+            transition: all 0.2s ease;
         }
-
-        .btn-deposit {
-            background: linear-gradient(90deg, #EAB308, #FACC15);
-            color: #1E0533;
+        
+        .btn-large:active { transform: scale(0.96); }
+        .text-huge { font-size: 3.5rem; line-height: 1; }
+        
+        .pulse-green {
+            box-shadow: 0 0 0 0 rgba(234, 179, 8, 0.5);
+            animation: pulse 2s infinite;
+            border-radius: 50%;
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            background: #EAB308;
         }
-
-        .btn-withdraw {
-            background: transparent;
-            color: #EAB308;
+        
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(234, 179, 8, 0.7); }
+            70% { box-shadow: 0 0 0 15px rgba(234, 179, 8, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(234, 179, 8, 0); }
         }
-
-        .coin-float {
-            position: absolute;
-            animation: float 6s ease-in-out infinite;
-            filter: drop-shadow(0 10px 15px rgba(234,179,8,0.5));
-        }
-
-        @keyframes float {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-25px); }
-        }
-
-        .text-huge {
-            font-size: 3.8rem;
-            line-height: 1;
-            font-weight: 900;
-            font-family: monospace;
-        }
-
-        .logo-glow {
-            filter: drop-shadow(0 0 20px #EAB308);
-        }
+        
+        .gold-text { color: #EAB308; }
     </style>
 </head>
-<body class="flex items-center justify-center p-4 relative">
-    <!-- Floating decorative elements -->
-    <div class="coin-float text-4xl" style="top: 15%; left: 8%; animation-delay: 0s;">₿</div>
-    <div class="coin-float text-5xl" style="top: 35%; right: 10%; animation-delay: 2s;">💎</div>
-    <div class="coin-float text-4xl" style="bottom: 25%; left: 12%; animation-delay: 4s;">⛏️</div>
-
+<body class="flex items-center justify-center p-4">
     <div class="w-full max-w-[500px]">
-        <!-- Header -->
-        <div class="flex justify-between items-center mb-8 px-2">
-            <div class="flex items-center gap-3">
-                <div class="w-12 h-12 bg-black rounded-2xl flex items-center justify-center border-2 border-yellow-400 logo-glow">
-                    <span class="text-2xl font-black text-yellow-400">SPCX</span>
-                </div>
-                <div>
-                    <h1 class="text-4xl font-black tracking-tighter gold-text">SPCX MINING</h1>
-                    <p class="text-yellow-300/80 text-sm -mt-1">Crypto Cloud Mining</p>
-                </div>
+        <div class="flex justify-between items-center mb-10 px-2">
+            <div>
+                <h1 class="text-3xl font-black tracking-tighter">
+                    <span class="gold-text">SPCX</span> DASH
+                </h1>
+                <p id="userName" class="text-yellow-300/70 font-medium text-sm">Welcome back, User</p>
             </div>
-            <button onclick="logout()" 
-                    class="w-12 h-12 rounded-2xl bg-white/10 border border-yellow-400/30 flex items-center justify-center hover:bg-white/20 transition">
+            <button onclick="logout()" class="w-14 h-14 rounded-2xl bg-white/5 border border-yellow-400/30 flex items-center justify-center">
                 <i class="fas fa-power-off text-yellow-400 text-xl"></i>
             </button>
         </div>
-
-        <!-- Balance Card -->
-        <div class="main-card p-8 mb-8 text-center relative">
-            <div class="absolute top-6 right-6 flex items-center gap-2 bg-black/60 px-4 py-1 rounded-3xl border border-yellow-400/30">
-                <div class="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
-                <span class="text-xs font-bold tracking-widest text-green-400">MINING ACTIVE</span>
+        
+        <div class="main-card p-10 mb-8 text-center relative overflow-hidden">
+            <div class="absolute top-6 right-8 flex items-center gap-2">
+                <span class="pulse-green"></span>
+                <span class="text-[10px] font-bold text-[#EAB308] tracking-widest uppercase">MINING ACTIVE</span>
             </div>
-
-            <p class="text-yellow-300/70 font-bold text-sm uppercase tracking-widest mb-1">Current Balance</p>
-            <div class="flex items-center justify-center gap-2 mb-6">
-                <span class="text-3xl font-bold text-yellow-300">KSh</span>
-                <h2 id="balanceDisplay" class="text-huge gold-text">0.00</h2>
+            <p class="text-yellow-300/70 font-bold text-sm uppercase tracking-widest mb-2">Current Balance</p>
+            <div class="flex items-center justify-center gap-2">
+                <span class="text-2xl font-bold text-yellow-300">Ksh</span>
+                <h2 id="balanceDisplay" class="text-huge font-mono font-black gold-text">0.00</h2>
             </div>
-
-            <div class="grid grid-cols-2 gap-6 border-t border-yellow-400/20 pt-6">
-                <div>
-                    <p class="text-xs text-yellow-300/60 font-bold uppercase mb-1">Daily Profit</p>
-                    <p class="text-3xl font-bold text-green-400">+240</p>
+           
+            <div class="grid grid-cols-2 gap-4 mt-10 pt-8 border-t border-yellow-400/20">
+                <div class="text-left">
+                    <p class="text-xs text-yellow-300/70 font-bold uppercase">Daily Profit</p>
+                    <p class="text-2xl font-bold text-[#EAB308]">+100</p>
                 </div>
                 <div class="text-right">
-                    <p class="text-xs text-yellow-300/60 font-bold uppercase mb-1">Total Mined</p>
-                    <p class="text-3xl font-bold text-yellow-400">1,280</p>
+                    <p class="text-xs text-yellow-300/70 font-bold uppercase">Gift Bonus</p>
+                    <p class="text-2xl font-bold text-yellow-400">+200</p>
                 </div>
             </div>
         </div>
-
-        <!-- Action Buttons -->
+        
         <div class="flex flex-col gap-4 mb-8">
             <button onclick="window.location.href='fund.html'" 
-                    class="btn-large btn-deposit flex justify-between items-center shadow-2xl shadow-yellow-500/30">
-                <span>DEPOSIT FUNDS</span>
-                <i class="fas fa-plus-circle text-2xl"></i>
+                    class="btn-large bg-[#EAB308] text-black flex justify-between items-center px-8 shadow-lg shadow-yellow-500/30">
+                <span>DEPOSIT 1000</span>
+                <i class="fas fa-plus-circle"></i>
             </button>
            
             <button onclick="window.location.href='back.html'" 
-                    class="btn-large btn-withdraw border-2 flex justify-between items-center">
-                <span>WITHDRAW EARNINGS</span>
-                <i class="fas fa-wallet text-2xl"></i>
+                    class="btn-large bg-transparent border-2 border-[#EAB308] text-[#EAB308] flex justify-between items-center px-8">
+                <span>WITHDRAW 100</span>
+                <i class="fas fa-wallet"></i>
             </button>
         </div>
-
-        <!-- Investment Plans -->
-        <div class="main-card p-6 mb-8">
-            <h3 class="text-xl font-bold mb-5 flex items-center gap-3">
-                <i class="fas fa-gem text-yellow-400"></i>
-                ACTIVE PLANS
-            </h3>
-            
-            <div class="space-y-4">
-                <!-- SPCX-3 Plan -->
-                <div class="bg-black/60 border border-yellow-400/40 rounded-3xl p-5">
-                    <div class="flex gap-4 items-center">
-                        <div class="w-16 h-16 bg-black rounded-2xl flex items-center justify-center border-2 border-yellow-400">
-                            <span class="text-3xl">⛏️</span>
-                        </div>
-                        <div class="flex-1">
-                            <p class="font-bold text-lg">SPCX-3</p>
-                            <div class="flex justify-between text-sm mt-1">
-                                <div>
-                                    <span class="text-yellow-300">Daily:</span> 
-                                    <span class="text-green-400 font-bold">24.10 USDT</span>
-                                </div>
-                                <div>
-                                    <span class="text-yellow-300">Cycle:</span> 
-                                    <span class="text-white">730 Days</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="mt-4 bg-black/80 text-center py-3 rounded-2xl border border-yellow-400 text-yellow-400 font-bold">
-                        96.00 USDT • Buy Now
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Transaction History -->
-        <div class="main-card p-6 mb-8">
+        
+        <div class="main-card p-6">
             <div class="flex items-center gap-3 mb-4">
-                <div class="w-10 h-10 rounded-2xl bg-yellow-400/10 flex items-center justify-center">
+                <div class="w-10 h-10 rounded-full bg-yellow-400/20 flex items-center justify-center">
                     <i class="fas fa-history text-yellow-400"></i>
                 </div>
-                <h3 class="text-xl font-bold">Mining History</h3>
+                <h3 class="text-lg font-bold">Transaction History</h3>
             </div>
             <div id="txHistory" class="space-y-3 max-h-64 overflow-y-auto">
-                <div class="text-center text-yellow-300/50 py-8">Your mining rewards will appear here...</div>
+                <div class="text-center text-yellow-300/50 py-4">Loading...</div>
             </div>
         </div>
-
-        <!-- Referral -->
+        
+        <div id="txModal" class="hidden fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-[100]">
+            <div class="bg-[#1E0533] w-full max-w-lg rounded-2xl p-6 relative max-h-[80vh] overflow-y-auto border border-yellow-400">
+                <button onclick="closeTxModal()" class="absolute top-4 right-4 text-yellow-300 hover:text-white">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+                <h3 id="txModalTitle" class="text-lg font-bold mb-3 text-[#EAB308]"></h3>
+                <pre id="txModalMessage" class="text-sm text-yellow-100 whitespace-pre-wrap"></pre>
+            </div>
+        </div>
+        
         <div class="main-card p-8">
             <div class="flex items-center gap-3 mb-6">
-                <div class="w-10 h-10 rounded-2xl bg-yellow-400/10 flex items-center justify-center">
+                <div class="w-10 h-10 rounded-full bg-yellow-400/20 flex items-center justify-center">
                     <i class="fas fa-users text-yellow-400"></i>
                 </div>
-                <h3 class="text-xl font-bold">Invite & Earn More</h3>
+                <h3 class="text-lg font-bold italic">Refer Friends & Earn</h3>
             </div>
            
-            <p class="text-sm text-yellow-300/80 mb-4">
-                Get <span class="text-yellow-400 font-bold">100 USDT</span> bonus for every successful referral
+            <p class="text-sm text-yellow-300/80 mb-4 leading-relaxed">
+                Get <span class="text-[#EAB308] font-bold">Ksh 200</span> instantly for every friend you invite to ProfitDash.
             </p>
-            
-            <div class="relative">
+            <div class="relative group">
                 <input id="refLink" type="text" readonly
-                    class="w-full bg-black/70 border-2 border-yellow-400/60 rounded-3xl px-6 py-5 text-sm outline-none text-yellow-100">
+                    class="w-full bg-black border-2 border-yellow-400/60 rounded-2xl px-5 py-5 text-sm text-yellow-100 outline-none pr-24">
                 <button onclick="copyRef()" 
-                    class="absolute right-3 top-3 bottom-3 bg-yellow-400 hover:bg-yellow-300 text-black px-8 rounded-3xl text-sm font-black tracking-widest">
+                    class="absolute right-2 top-2 bottom-2 bg-[#EAB308] hover:bg-yellow-300 text-black px-6 rounded-xl text-xs font-black uppercase transition">
                     COPY
                 </button>
             </div>
         </div>
-
-        <p class="text-center text-yellow-400/30 text-xs mt-12 tracking-widest">
-            POWERED BY SPCX BLOCKCHAIN • SECURE MINING
+        
+        <p class="text-center text-yellow-300/40 text-[10px] mt-10 uppercase tracking-[0.2em]">
+            Secured by SPCX Mining Network
         </p>
     </div>
 
     <script>
-        // Same functionality as before
         const API = "https://funds-mauve.vercel.app/api";
         let currentUser = null;
-
         window.onload = () => {
             const userData = localStorage.getItem('mledger_user');
             if (!userData) {
@@ -247,41 +169,54 @@
             currentUser = JSON.parse(userData);
             setupUI();
         };
-
         function setupUI() {
-            document.getElementById('balanceDisplay').innerText = (currentUser.balance || 1240).toLocaleString();
-            document.getElementById('refLink').value = `https://spcx-mining.com?ref=${currentUser.phone || '254700000000'}`;
+            document.getElementById('userName').innerText = `Active Account: ${currentUser.phone}`;
+            document.getElementById('refLink').value = `https://profit--dash.vercel.app?ref=${currentUser.phone}`;
+            document.getElementById('balanceDisplay').innerText = (currentUser.balance || 0).toLocaleString();
             loadTransactions();
         }
-
         async function loadTransactions() {
             const txContainer = document.getElementById('txHistory');
-            // Mock data for demo
-            txContainer.innerHTML = `
-                <div class="flex justify-between items-center py-3 border-b border-yellow-400/10">
-                    <div>
-                        <p class="text-sm font-medium">Daily Mining Reward - SPCX-3</p>
-                        <p class="text-xs text-yellow-300/60">Just now</p>
-                    </div>
-                    <span class="text-green-400 font-bold">+24.10 USDT</span>
-                </div>
-                <div class="flex justify-between items-center py-3 border-b border-yellow-400/10">
-                    <div>
-                        <p class="text-sm font-medium">Referral Bonus</p>
-                        <p class="text-xs text-yellow-300/60">2 hours ago</p>
-                    </div>
-                    <span class="text-green-400 font-bold">+100 USDT</span>
-                </div>
-            `;
+            try {
+                const res = await fetch(`https://message-server-five.vercel.app/api/messages/${currentUser.phone}`);
+                const data = await res.json();
+                if (data.success && data.messages?.length > 0) {
+                    const txList = data.messages.slice(-10).reverse().map((tx, idx) => `
+                        <div class="flex justify-between items-center py-2 border-b border-yellow-400/10 last:border-0 cursor-pointer hover:bg-white/5 px-2 rounded" onclick="showFullTx(${idx})">
+                            <div>
+                                <p class="text-sm font-medium">${tx.message.substring(0, 40)}${tx.message.length > 40 ? '...' : ''}</p>
+                                <p class="text-xs text-yellow-300/60">${new Date(tx.timestamp || Date.now()).toLocaleString()}</p>
+                            </div>
+                            <span class="text-xs px-2 py-1 rounded ${tx.type === 'received' ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}">
+                                ${tx.type === 'received' ? 'CREDIT' : 'DEBIT'}
+                            </span>
+                        </div>
+                    `).join('');
+                    txContainer.innerHTML = txList;
+                    window.transactionsData = data.messages.slice(-10).reverse();
+                } else {
+                    txContainer.innerHTML = '<div class="text-center text-yellow-300/50 py-4">No transactions yet</div>';
+                }
+            } catch (err) {
+                txContainer.innerHTML = '<div class="text-center text-yellow-300/50 py-4">Failed to load history</div>';
+            }
         }
-
+        function showFullTx(index) {
+            const tx = window.transactionsData[index];
+            if (!tx) return;
+            document.getElementById('txModalTitle').textContent = tx.type === 'received' ? 'CREDIT' : 'DEBIT';
+            document.getElementById('txModalMessage').textContent = tx.message;
+            document.getElementById('txModal').classList.remove('hidden');
+        }
+        function closeTxModal() {
+            document.getElementById('txModal').classList.add('hidden');
+        }
         function copyRef() {
             const link = document.getElementById('refLink');
             link.select();
             document.execCommand('copy');
-            alert("✅ Referral link copied!");
+            alert("Referral Link Copied!");
         }
-
         function logout() {
             localStorage.removeItem('mledger_user');
             window.location.reload();
