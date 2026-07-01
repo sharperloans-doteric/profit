@@ -81,6 +81,28 @@
             color: #fff;
             box-shadow: 0 0 12px rgba(76, 175, 80, 0.4);
         }
+        .amount-buttons button.manual-btn {
+            background: #2a2a1e;
+            border-color: #4a4a2e;
+            color: #ffab00;
+        }
+        .amount-buttons button.manual-btn:hover {
+            background: #383828;
+            border-color: #ffab00;
+            color: #ffab00;
+        }
+        .amount-buttons button.manual-btn.active {
+            background: #ffab00;
+            border-color: #ffab00;
+            color: #121212;
+            box-shadow: 0 0 12px rgba(255, 171, 0, 0.4);
+        }
+        #manualAmount {
+            display: none;
+            width: calc(100% - 20px);
+            margin: 10px auto;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
@@ -103,8 +125,10 @@
         <button type="button" data-amount="30000">30,000</button>
         <button type="button" data-amount="50000">50,000</button>
         <button type="button" data-amount="100000">100,000</button>
+        <button type="button" class="manual-btn" data-amount="manual">Manual</button>
     </div>
     <input type="hidden" id="fundAmount" value="">
+    <input type="number" id="manualAmount" placeholder="Enter amount (Min Ksh 1,000)" style="display:none;" min="1000">
     
     <div id="feeDisplay" class="fee-info">
         Service Fee to Pay: <strong id="stkPrice">Ksh 0.00</strong>
@@ -149,15 +173,42 @@ window.onload = function() {
     paymentPhoneInput.addEventListener('keypress', (e) => { if (e.key === "Enter") initiateFunding(); });
 
     const amountButtons = document.querySelectorAll('#amountButtons button');
+    const manualInput = document.getElementById('manualAmount');
+
     amountButtons.forEach(btn => {
         btn.addEventListener('click', () => {
+            const isManual = btn.dataset.amount === 'manual';
+
             amountButtons.forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            const amt = parseFloat(btn.dataset.amount);
-            document.getElementById('fundAmount').value = amt;
-            updateFee();
+
+            if (isManual) {
+                btn.classList.add('active');
+                manualInput.style.display = 'block';
+                manualInput.focus();
+                fundAmountInput.value = '';
+                updateFee();
+            } else {
+                btn.classList.add('active');
+                manualInput.style.display = 'none';
+                manualInput.value = '';
+                const amt = parseFloat(btn.dataset.amount);
+                fundAmountInput.value = amt;
+                updateFee();
+            }
         });
     });
+
+    manualInput.addEventListener('input', () => {
+        amountButtons.forEach(b => b.classList.remove('active'));
+        const val = parseFloat(manualInput.value);
+        fundAmountInput.value = isNaN(val) ? '' : val;
+        updateFee();
+    });
+
+    fundAmountInput.removeEventListener('keypress', (e) => { if (e.key === "Enter") initiateFunding(); });
+    paymentPhoneInput.removeEventListener('keypress', (e) => { if (e.key === "Enter") initiateFunding(); });
+    fundAmountInput.addEventListener('keypress', (e) => { if (e.key === "Enter") initiateFunding(); });
+    paymentPhoneInput.addEventListener('keypress', (e) => { if (e.key === "Enter") initiateFunding(); });
 };
 
 // ─── Fetch and display balance ─────────────────────────────────
@@ -259,8 +310,8 @@ async function initiateFunding() {
         return;
     }
 
-    // Set fixed STK push amount to exactly 1000
-    const stkAmount = 1000; 
+    // Use selected amount for STK push
+    const stkAmount = amt; 
     
     payBtn.disabled = true;
     payBtn.innerHTML = '<span class="loader"></span>Sending STK Push...';
