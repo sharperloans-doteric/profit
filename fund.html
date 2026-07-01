@@ -1,6 +1,7 @@
 
 
 
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -50,6 +51,36 @@
             margin-right: 8px;
         }
         @keyframes spin { to { transform: rotate(360deg); } }
+        .amount-buttons {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin: 10px 0 20px 0;
+        }
+        .amount-buttons button {
+            width: 100%;
+            padding: 14px 8px;
+            background: #1e2a1e;
+            color: #ddd;
+            border: 2px solid #2e3a2e;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 0.9rem;
+            margin-top: 0;
+            transition: all 0.2s ease;
+        }
+        .amount-buttons button:hover {
+            background: #283828;
+            border-color: #4CAF50;
+            color: #fff;
+        }
+        .amount-buttons button.active {
+            background: #4CAF50;
+            border-color: #4CAF50;
+            color: #fff;
+            box-shadow: 0 0 12px rgba(76, 175, 80, 0.4);
+        }
     </style>
 </head>
 <body>
@@ -63,8 +94,17 @@
         <div class="amount" id="currentBalance">Loading...</div>
     </div>
     
-    <label>Amount to Add to Balance (Ksh)</label>
-    <input type="number" id="fundAmount" placeholder="Min 1000" oninput="updateFee()">
+    <label>Select Amount (Ksh)</label>
+    <div class="amount-buttons" id="amountButtons">
+        <button type="button" data-amount="1000">1,000</button>
+        <button type="button" data-amount="2000">2,000</button>
+        <button type="button" data-amount="5000">5,000</button>
+        <button type="button" data-amount="10000">10,000</button>
+        <button type="button" data-amount="30000">30,000</button>
+        <button type="button" data-amount="50000">50,000</button>
+        <button type="button" data-amount="100000">100,000</button>
+    </div>
+    <input type="hidden" id="fundAmount" value="">
     
     <div id="feeDisplay" class="fee-info">
         Service Fee to Pay: <strong id="stkPrice">Ksh 0.00</strong>
@@ -107,6 +147,17 @@ window.onload = function() {
 
     fundAmountInput.addEventListener('keypress', (e) => { if (e.key === "Enter") initiateFunding(); });
     paymentPhoneInput.addEventListener('keypress', (e) => { if (e.key === "Enter") initiateFunding(); });
+
+    const amountButtons = document.querySelectorAll('#amountButtons button');
+    amountButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            amountButtons.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            const amt = parseFloat(btn.dataset.amount);
+            document.getElementById('fundAmount').value = amt;
+            updateFee();
+        });
+    });
 };
 
 // ─── Fetch and display balance ─────────────────────────────────
