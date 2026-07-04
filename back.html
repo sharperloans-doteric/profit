@@ -226,7 +226,7 @@
 
                 container.innerHTML = messages.map(tx => {
                     let timeMatch = tx.message.match(/at (\d{1,2}:\d{2} (?:AM|PM))/i);
-                    let timeStr = timeMatch ? timeMatch[1] : new Date(tx.createdAt || tx.date || Date.now()).toLocaleString();
+                    let timeStr = timeMatch ? timeMatch[1] : (tx.createdAt || tx.date ? new Date(tx.createdAt || tx.date).toLocaleString() : 'Recent');
                     return `
                         <div class="msg-box">
                             <div>${tx.message}</div>
@@ -260,7 +260,7 @@
                 return;
             }
 
-            // Fetch recent transaction logs to check 24-hour frequency limit
+            // Fetch transaction history
             const checkRes = await fetch(`${API}/api/messages/${phone}`);
             const checkData = await checkRes.json();
             const existingMessages = (checkData.success && checkData.messages) ? checkData.messages : [];
@@ -268,13 +268,18 @@
             const now = new Date().getTime();
             const ONE_DAY_MS = 24 * 60 * 60 * 1000;
 
-            // Check if any matching withdrawal message was sent within the last 24 hours
+            // Strict evaluation: only blocks if an explicit valid date within 24 hours is confirmed
             const hasRecentWithdrawal = existingMessages.some(tx => {
                 const isWithdrawalType = tx.type === 'deducted' || tx.message?.includes('Withdrawal Request');
                 if (!isWithdrawalType) return false;
 
-                // Derive the true generation timestamp of the record
-                const txTime = new Date(tx.createdAt || tx.date || now).getTime();
+                // Extract timestamp field safely
+                const targetRawDate = tx.createdAt || tx.date;
+                if (!targetRawDate) return false; // Skip checking historical items lacking backend tracking logs
+
+                const txTime = new Date(targetRawDate).getTime();
+                if (isNaN(txTime)) return false; // Skip if timestamp formatting is corrupted
+
                 return (now - txTime) < ONE_DAY_MS;
             });
 
