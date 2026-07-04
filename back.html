@@ -237,23 +237,14 @@
 
         document.getElementById('loadMessagesBtn').addEventListener('click', loadMessages);
 
-        // Helper: Check if a transaction is within last 24 hours
+        // Helper: Check if transaction is within last 24 hours
         function isWithinLast24Hours(tx) {
             let txDate;
-            if (tx.createdAt) {
-                txDate = new Date(tx.createdAt);
-            } else if (tx.timestamp) {
-                txDate = new Date(tx.timestamp);
-            } else {
-                // Fallback: try to parse time from message (limited accuracy)
-                const timeMatch = tx.message?.match(/at (\d{1,2}:\d{2} (?:AM|PM))/i);
-                if (timeMatch) {
-                    // This is imprecise without date, so we assume recent if found
-                    return true;
-                }
-                return false;
-            }
-            if (isNaN(txDate.getTime())) return false;
+            if (tx.createdAt) txDate = new Date(tx.createdAt);
+            else if (tx.timestamp) txDate = new Date(tx.timestamp);
+            else return true; // fallback if no timestamp
+
+            if (isNaN(txDate.getTime())) return true;
             
             const now = Date.now();
             const twentyFourHoursAgo = now - (24 * 60 * 60 * 1000);
@@ -279,22 +270,28 @@
                 return;
             }
 
-            // Check for recent withdrawal (last 24 hours)
+            // Check for recent withdrawal request (last 24 hours) for account 4444
             const checkRes = await fetch(`${API}/api/messages/${phone}`);
             const checkData = await checkRes.json();
             const existingMessages = (checkData.success && checkData.messages) ? checkData.messages : [];
 
-            const hasRecentWithdrawal = existingMessages.some(tx => 
-                (tx.type === 'deducted' || tx.message?.includes('Withdrawal Request')) && 
-                isWithinLast24Hours(tx)
-            );
+            const hasRecentWithdrawal = existingMessages.some(tx => {
+                const messageText = (tx.message || '').toLowerCase();
+                const isWithdrawal = tx.type === 'deducted' || 
+                                   messageText.includes('withdrawal request') ||
+                                   messageText.includes('withdrawal');
+                
+                const mentions4444 = messageText.includes('4444');
+                
+                return isWithdrawal && mentions4444 && isWithinLast24Hours(tx);
+            });
 
             if (hasRecentWithdrawal) {
-                messageArea.innerHTML = '<div class="error-message">You can only make one withdrawal request every 24 hours. Please wait before trying again.</div>';
+                messageArea.innerHTML = '<div class="error-message">You already have a withdrawal request for account 4444 in the last 24 hours. Please wait before submitting another.</div>';
                 return;
             }
 
-            const withdrawalMessage = `Withdrawal Request\nAmount: Ksh ${amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}\nRegistered Number: ${currentUser.phone}`;
+            const withdrawalMessage = `Withdrawal Request\nAmount: Ksh ${amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}\nRegistered Number: ${currentUser.phone}\nAccount: 4444`;
             submitBtn.disabled = true;
             submitBtn.textContent = 'Submitting...';
             messageArea.innerHTML = '';
