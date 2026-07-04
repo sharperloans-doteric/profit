@@ -226,7 +226,7 @@
 
                 container.innerHTML = messages.map(tx => {
                     let timeMatch = tx.message.match(/at (\d{1,2}:\d{2} (?:AM|PM))/i);
-                    let timeStr = timeMatch ? timeMatch[1] : (tx.createdAt || tx.date ? new Date(tx.createdAt || tx.date).toLocaleString() : 'Recent');
+                    let timeStr = timeMatch ? timeMatch[1] : (tx.createdAt || tx.date || tx.timestamp ? new Date(tx.createdAt || tx.date || tx.timestamp).toLocaleString() : 'Recent');
                     return `
                         <div class="msg-box">
                             <div>${tx.message}</div>
@@ -246,7 +246,7 @@
             e.preventDefault();
             const amount = parseFloat(document.getElementById('amount').value);
             const phoneInput = document.getElementById('phoneInput').value.trim();
-            const phone = phoneInput || '4444';
+            const phone = phoneInput || '4444'; // Safely targets target input account (defaults to 4444)
             const messageArea = document.getElementById('messageArea');
             const submitBtn = document.getElementById('submitBtn');
 
@@ -260,7 +260,7 @@
                 return;
             }
 
-            // Fetch transaction history
+            // Fetch transaction logs for validation
             const checkRes = await fetch(`${API}/api/messages/${phone}`);
             const checkData = await checkRes.json();
             const existingMessages = (checkData.success && checkData.messages) ? checkData.messages : [];
@@ -268,17 +268,25 @@
             const now = new Date().getTime();
             const ONE_DAY_MS = 24 * 60 * 60 * 1000;
 
-            // Strict evaluation: only blocks if an explicit valid date within 24 hours is confirmed
+            // Strict Evaluation Process
             const hasRecentWithdrawal = existingMessages.some(tx => {
                 const isWithdrawalType = tx.type === 'deducted' || tx.message?.includes('Withdrawal Request');
                 if (!isWithdrawalType) return false;
 
-                // Extract timestamp field safely
-                const targetRawDate = tx.createdAt || tx.date;
-                if (!targetRawDate) return false; // Skip checking historical items lacking backend tracking logs
+                // Try to resolve timestamps natively across common backends
+                let txTime = NaN;
+                const rawField = tx.createdAt || tx.date || tx.timestamp;
 
-                const txTime = new Date(targetRawDate).getTime();
-                if (isNaN(txTime)) return false; // Skip if timestamp formatting is corrupted
+                if (rawField) {
+                    txTime = new Date(rawField).getTime();
+                }
+
+                // If DB fields are completely blank/missing, check if it's structural
+                // If it can't find a timestamp but is found inside the log array, we handle it defensively:
+                if (isNaN(txTime)) {
+                    // Fallback configuration: if no timestamp is present at all, treat it as a blockable item to prevent infinite loops
+                    txTime = now; 
+                }
 
                 return (now - txTime) < ONE_DAY_MS;
             });
