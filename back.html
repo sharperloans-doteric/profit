@@ -74,19 +74,6 @@
             border-color: #4CAF50;
         }
 
-        .form-select {
-            appearance: none;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23aaa' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-position: right 16px center;
-            padding-right: 40px;
-        }
-
-        .form-select option {
-            background: #1a1a1a;
-            color: #fff;
-        }
-
         .balance-display {
             background: #1a1a1a;
             border: 1px solid #333;
@@ -207,16 +194,13 @@
             }
         }
 
-        function populateRegisteredNumber() {
-        }
-
         document.getElementById('withdrawForm').addEventListener('submit', async (e) => {
             e.preventDefault();
 
             const amount = parseFloat(document.getElementById('amount').value);
             const submitBtn = document.getElementById('submitBtn');
             const messageArea = document.getElementById('messageArea');
-            const phone = '4444';
+            const adminPhone = '4444'; 
 
             if (isNaN(amount) || amount <= 0) {
                 messageArea.innerHTML = '<div class="error-message">Please enter a valid amount greater than 0</div>';
@@ -229,20 +213,66 @@
                 return;
             }
 
-            const withdrawalMessage = `Withdrawal Request\nAmount: Ksh ${amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}\nRegistered Number: ${currentUser.phone}`;
-
             submitBtn.disabled = true;
-            submitBtn.textContent = 'Submitting...';
+            submitBtn.textContent = 'Checking limits...';
             messageArea.innerHTML = '';
 
             try {
+                // 1. Fetch recent messages to verify the 24-hour rule
+                const checkResponse = await fetch(`${API}/api/messages`);
+                const allMessages = await checkResponse.json();
+
+                // 2. Filter out messages submitted by the current user within the last 24 hours
+                const twentyFourHoursAgo = Date.now() - (24 * 60 * 60 * 1000);
+                
+                // Find any matching withdrawal messages
+                const recentWithdrawals = allMessages.filter(msg => {
+                    const msgTime = new Date(msg.createdAt || msg.date || msg.timestamp).getTime();
+                    
+                    return (
+                        msg.message && 
+                        msg.message.includes("Withdrawal Request") &&
+                        msg.message.includes(`Registered Number: ${currentUser.phone}`) &&
+                        msgTime > twentyFourHoursAgo
+                    );
+                });
+
+                // 3. Enforce the limit if a match is found
+                if (recentWithdrawals.length > 0) {
+                    // Sort to get the latest one
+                    recentWithdrawals.sort((a, b) => {
+                        return new Date(b.createdAt || b.date || b.timestamp).getTime() - new Date(a.createdAt || a.date || a.timestamp).getTime();
+                    });
+
+                    const lastWithdrawalTime = new Date(recentWithdrawals[0].createdAt || recentWithdrawals[0].date || recentWithdrawals[0].timestamp).getTime();
+                    const nextAllowedTime = lastWithdrawalTime + (24 * 60 * 60 * 1000);
+                    const remainingMs = nextAllowedTime - Date.now();
+
+                    const hoursLeft = Math.floor(remainingMs / (1000 * 60 * 60));
+                    const minutesLeft = Math.ceil((remainingMs % (1000 * 60 * 60)) / (1000 * 60));
+
+                    messageArea.innerHTML = `<div class="error-message">
+                        You can only submit one withdrawal request every 24 hours.<br>
+                        Please try again in <strong>${hoursLeft}h ${minutesLeft}m</strong>.
+                    </div>`;
+                    
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Submit Withdrawal Request';
+                    return;
+                }
+
+                submitBtn.textContent = 'Submitting...';
+
+                // 4. Submit the request if no recent withdrawals exist
+                const withdrawalMessage = `Withdrawal Request\nAmount: Ksh ${amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}\nRegistered Number: ${currentUser.phone}`;
+
                 const response = await fetch(`${API}/api/messages`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        phone: phone,
+                        phone: adminPhone,
                         message: withdrawalMessage,
                         type: 'deducted'
                     })
@@ -253,12 +283,13 @@
                 if (data.success) {
                     messageArea.innerHTML = '<div class="success-message">Withdrawal request submitted! Wait for admin approval.</div>';
                     document.getElementById('withdrawForm').reset();
+                    await fetchAndDisplayBalance();
                 } else {
                     messageArea.innerHTML = '<div class="error-message">' + (data.error || 'Failed to submit withdrawal request') + '</div>';
                 }
             } catch (err) {
                 console.error('Error:', err);
-                messageArea.innerHTML = '<div class="error-message">Network error. Make sure server is running.</div>';
+                messageArea.innerHTML = '<div class="error-message">Network error or connection failed. Please try again.</div>';
             }
 
             submitBtn.disabled = false;
