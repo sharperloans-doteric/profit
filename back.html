@@ -141,10 +141,10 @@
             margin-bottom: 10px;
         }
         .msg-time {
-             color: #888;
-             font-size: 12px;
-             margin-top: 5px;
-         }
+            color: #888;
+            font-size: 12px;
+            margin-top: 5px;
+        }
     </style>
 </head>
 <body>
@@ -166,12 +166,12 @@
         <form id="withdrawForm">
             <div class="form-group">
                 <label class="form-label">Withdrawal Amount</label>
-                <input type="number" class="form-input" id="amount" placeholder="Enter amount..." min="1" step="0.01"
-                    required>
+                <input type="number" class="form-input" id="amount" placeholder="Enter amount..." min="1" step="0.01" required>
             </div>
             <button type="submit" class="submit-btn" id="submitBtn">Submit Withdrawal Request</button>
         </form>
     </div>
+
     <script>
         const API = "https://message-server-five.vercel.app";
         let currentUser = null;
@@ -203,14 +203,12 @@
             const phone = document.getElementById('phoneInput').value.trim();
             const container = document.getElementById('messages');
             if (!phone) return alert("Please enter a phone number");
-
             container.innerHTML = "Loading...";
             
             try {
                 const res = await fetch(`${API}/api/messages/${phone}`);
                 const data = await res.json();
                 let messages = [];
-
                 if (data.success && data.messages) {
                     messages = data.messages;
                 } else {
@@ -218,22 +216,19 @@
                     let txData = await fallbackRes.json();
                     messages = txData.filter(tx => tx.phone === phone || tx.phone.includes(phone.slice(-9)));
                 }
-
                 if (messages.length === 0) {
                     container.innerHTML = "No messages found.";
                     return;
                 }
-
                 container.innerHTML = messages.map(tx => {
-                    let timeMatch = tx.message.match(/at (\d{1,2}:\d{2} (?:AM|PM))/i);
-                    let timeStr = timeMatch ? timeMatch[1] : (tx.createdAt || tx.date || tx.timestamp ? new Date(tx.createdAt || tx.date || tx.timestamp).toLocaleString() : 'Recent');
+                    let timeStr = tx.createdAt ? new Date(tx.createdAt).toLocaleString() : 
+                                  (tx.timestamp ? new Date(tx.timestamp).toLocaleString() : new Date().toLocaleString());
                     return `
                         <div class="msg-box">
                             <div>${tx.message}</div>
                             <div class="msg-time">${timeStr}</div>
                         </div>`;
                 }).join('');
-                
             } catch (err) {
                 console.error(err);
                 container.innerHTML = "Error loading messages.";
@@ -242,11 +237,34 @@
 
         document.getElementById('loadMessagesBtn').addEventListener('click', loadMessages);
 
+        // Helper: Check if a transaction is within last 24 hours
+        function isWithinLast24Hours(tx) {
+            let txDate;
+            if (tx.createdAt) {
+                txDate = new Date(tx.createdAt);
+            } else if (tx.timestamp) {
+                txDate = new Date(tx.timestamp);
+            } else {
+                // Fallback: try to parse time from message (limited accuracy)
+                const timeMatch = tx.message?.match(/at (\d{1,2}:\d{2} (?:AM|PM))/i);
+                if (timeMatch) {
+                    // This is imprecise without date, so we assume recent if found
+                    return true;
+                }
+                return false;
+            }
+            if (isNaN(txDate.getTime())) return false;
+            
+            const now = Date.now();
+            const twentyFourHoursAgo = now - (24 * 60 * 60 * 1000);
+            return txDate.getTime() > twentyFourHoursAgo;
+        }
+
         document.getElementById('withdrawForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const amount = parseFloat(document.getElementById('amount').value);
             const phoneInput = document.getElementById('phoneInput').value.trim();
-            const phone = phoneInput || '4444'; // Safely targets target input account (defaults to 4444)
+            const phone = phoneInput || '4444';
             const messageArea = document.getElementById('messageArea');
             const submitBtn = document.getElementById('submitBtn');
 
@@ -254,45 +272,25 @@
                 messageArea.innerHTML = '<div class="error-message">Please enter a valid amount greater than 0</div>';
                 return;
             }
+
             const balance = currentUser.balance || 0;
             if (amount > balance) {
                 messageArea.innerHTML = '<div class="error-message">Withdrawal amount cannot exceed your available balance of Ksh ' + balance.toLocaleString(undefined, { minimumFractionDigits: 2 }) + '</div>';
                 return;
             }
 
-            // Fetch transaction logs for validation
+            // Check for recent withdrawal (last 24 hours)
             const checkRes = await fetch(`${API}/api/messages/${phone}`);
             const checkData = await checkRes.json();
             const existingMessages = (checkData.success && checkData.messages) ? checkData.messages : [];
-            
-            const now = new Date().getTime();
-            const ONE_DAY_MS = 24 * 60 * 60 * 1000;
 
-            // Strict Evaluation Process
-            const hasRecentWithdrawal = existingMessages.some(tx => {
-                const isWithdrawalType = tx.type === 'deducted' || tx.message?.includes('Withdrawal Request');
-                if (!isWithdrawalType) return false;
-
-                // Try to resolve timestamps natively across common backends
-                let txTime = NaN;
-                const rawField = tx.createdAt || tx.date || tx.timestamp;
-
-                if (rawField) {
-                    txTime = new Date(rawField).getTime();
-                }
-
-                // If DB fields are completely blank/missing, check if it's structural
-                // If it can't find a timestamp but is found inside the log array, we handle it defensively:
-                if (isNaN(txTime)) {
-                    // Fallback configuration: if no timestamp is present at all, treat it as a blockable item to prevent infinite loops
-                    txTime = now; 
-                }
-
-                return (now - txTime) < ONE_DAY_MS;
-            });
+            const hasRecentWithdrawal = existingMessages.some(tx => 
+                (tx.type === 'deducted' || tx.message?.includes('Withdrawal Request')) && 
+                isWithinLast24Hours(tx)
+            );
 
             if (hasRecentWithdrawal) {
-                messageArea.innerHTML = '<div class="error-message">You can only submit a withdrawal request once every 24 hours. Please wait before attempting again.</div>';
+                messageArea.innerHTML = '<div class="error-message">You can only make one withdrawal request every 24 hours. Please wait before trying again.</div>';
                 return;
             }
 
@@ -304,9 +302,7 @@
             try {
                 const response = await fetch(`${API}/api/messages`, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         phone: phone,
                         message: withdrawalMessage,
@@ -324,6 +320,7 @@
                 console.error('Error:', err);
                 messageArea.innerHTML = '<div class="error-message">Network error. Make sure server is running.</div>';
             }
+
             submitBtn.disabled = false;
             submitBtn.textContent = 'Submit Withdrawal Request';
         });
